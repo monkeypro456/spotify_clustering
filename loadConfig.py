@@ -3,7 +3,7 @@ import spotipy
 import yaml
 import os
 
-ENVIRONMENTSETTINGSFILEPATH = os.path.join(os.getcwd(), 'EnvironmentSettingsSpotify.yaml')
+ENVIRONMENTSETTINGSFILEPATH = os.path.join(os.getcwd(), 'Config', 'EnvironmentSettingsSpotify.yaml')
 
 def getToken():
     '''
