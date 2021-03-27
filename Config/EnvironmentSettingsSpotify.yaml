@@ -1,0 +1,6 @@
+client_id: 64e451339e1049acabac90122ddf39ec
+client_secret: 3ae748405530465eae9acebeaab798ae
+scope: playlist-read-private user-read-recently-played user-top-read app-remote-control
+  streaming playlist-modify-private
+username: monkeypro456
+redirect_uri: http://localhost/
