@@ -1,20 +1,22 @@
-'''
+"""
 @author: sethp
 @created: 09/10/2019
-'''
+"""
 from loadConfig import getToken
 
 from sklearn import preprocessing, cluster, decomposition
 import pandas as pd
 import warnings
 import spotipy
+import time
+import os
 
 def getPlaylistTracks(spotifyConnection=getToken(), playlistName='Prabhat'):
-    '''
+    """
     :param spotifyConnection: an authenticated connection to spotify for a user
     :param playlistName: the name of the playlist
     :return: a pandas dataframe with information on all the tracks in the playlist
-    '''
+    """
     playlist = [i for i in spotifyConnection.user_playlists(spotifyConnection.me()['id'])['items'] if i['name'] == playlistName][0]
     tracks = spotifyConnection.user_playlist(spotifyConnection.me()['id'], playlist['id'])['tracks']
     items = tracks['items']
@@ -24,10 +26,10 @@ def getPlaylistTracks(spotifyConnection=getToken(), playlistName='Prabhat'):
     return pd.DataFrame(items)
 
 def dictCheck(col):
-    '''
+    """
     :param col: a column of a pandas dataframe
     :return: whether the column contains a dictionary or a list containing dictionaries
-    '''
+    """
     for row in col:
         if isinstance(row, dict):
             return 'dict'
@@ -43,22 +45,22 @@ def dictCheck(col):
             pass
 
 def dfDictColumn(df, col, suffix):
-    '''
+    """
     :param df: a dataframe
     :param col: a column of the dataframe that just contains dictionaires (can be empty)
     :param suffix: suffix for the dictionary keys. generally use the column name
     :return: dataframe with dictionary items as columns. drops the original column
-    '''
+    """
     return df.join(pd.DataFrame(list(df[col])).add_suffix(suffix)).drop(col, axis=1)
 
 def nestedDictToDf(df):
-    '''
+    """
     a function that loops over itself expanding all dictionaries found
 
     :requires: pd.DataFrame, pd.DataFrame.join(), pd.add_suffix(), pd.drop(), warnings.warn(), dfDictColumn()
     :param df: a dataframe with columns containing dictionaries or lists of dictionaries
     :return: a dataframe with all dictionary elements expanded out to columns
-    '''
+    """
     objectCols = df.select_dtypes(object).columns
     series = df[objectCols].apply(dictCheck, axis=0)
     dictCols = list(series.index[series == 'dict'])
@@ -85,11 +87,11 @@ def nestedDictToDf(df):
     return nestedDictToDf(df)
 
 def audioFeatures(df, spotifyConnection=getToken(), suffix='_audiofeat'):
-    '''
+    """
     :param df: a base dataframe with track information
     :param spotifyConnection: a connection to spotify for a particular user
     :return: the df with audio features for each track joined to it
-    '''
+    """
     audioFeatures = [spotifyConnection.audio_features(df['uri_track'][i:i+50]) for i in range(0, df.shape[0], 50)]
     audioFeatures = pd.DataFrame([item for sublist in audioFeatures for item in sublist])
     audioColumns = audioFeatures.select_dtypes(exclude=object).columns
@@ -107,6 +109,16 @@ def getInputData():
     tracksDf = timeSinceAdded(tracksDf)
     return tracksDf, audioColumns
 
+def loopOverTracksForLabelling(dfName):
+    tracksDf = pd.read_csv(os.getcwd() + f'\\{dfName}.csv')
+    spotifyConnection = getToken()
+
+    for idx, row in tracksDf.iterrows():
+        trackUri = row['uri_track']
+        spotifyConnection.start_playback(uris=[trackUri], position_ms=30000)
+        time.sleep()
+
+
 ## clustering ----------------------------------------------------------------------------------------------------------
 #cap and floor your data to remove outliers (could also just remove outliers)
 #cluster size should be between 5-30% of population
@@ -115,6 +127,7 @@ def PCA(x):
     pca = decomposition.PCA(n_components=1, random_state=13)
     x = pca.fit_transform(x)
     return x
+
 
 def clustering(x, cols, scaler, method='kmeans'):
     methods = {'kmeans': cluster.k_means}
@@ -148,13 +161,13 @@ def createPlaylists(df, audioColumns, scaler, method='kmeans', spotifyConnection
           'Scaler used: {scaler} \n' \
           'Method used: {method}'.format(scaler=str(type(scaler)), method=method))
 
-
-scaler1 = preprocessing.MinMaxScaler()
-scaler2 = preprocessing.StandardScaler()
-scaler3 = preprocessing.PowerTransformer(method='yeo-johnson')
-scaler4 = preprocessing.QuantileTransformer()
-
-
+## ---------------------------------------------------------------------------------------------------------------------
 if __name__ == '__main__':
-    tracksDf, audioColumns = getInputData()
-    createPlaylists(tracksDf, audioColumns, scaler4)
+    # scaler1 = preprocessing.MinMaxScaler()
+    # scaler2 = preprocessing.StandardScaler()
+    # scaler3 = preprocessing.PowerTransformer(method='yeo-johnson')
+    # scaler4 = preprocessing.QuantileTransformer()
+    #
+    # tracksDf, audioColumns = getInputData()
+    # createPlaylists(tracksDf, audioColumns, scaler4)
+    loopOverTracksForLabelling(dfName='cluster1')
