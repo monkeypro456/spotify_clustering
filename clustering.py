@@ -120,14 +120,6 @@ def loopOverTracksForLabelling(dfName):
         spotifyConnection.start_playback(uris=[trackUri], position_ms=30000)
         time.sleep(7)
 
-"""
-https://towardsdatascience.com/k-means-clustering-using-spotify-song-features-9eb7d53d105c
-https://towardsdatascience.com/profiling-my-favorite-songs-on-spotify-through-clustering-33fee591783d
-https://github.com/alejandra-gutierrez/SpotifyAPI/blob/master/venv/feature_analysis.py
-https://www.python-graph-gallery.com/392-use-faceting-for-radar-chart
-https://medium.com/@boplantinga/what-do-spotifys-audio-features-tell-us-about-this-year-s-eurovision-song-contest-66ad188e112a
-https://towardsdatascience.com/how-does-k-means-clustering-in-machine-learning-work-fdaaaf5acfa0
-"""
 ## graphical analysis --------------------------------------------------------------------------------------------------
 def plotYearlyDifferences(audioColumns):
     try:
